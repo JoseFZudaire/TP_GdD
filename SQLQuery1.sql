@@ -258,18 +258,18 @@ alter table ESTUDIANTES_CON_INSOMNIO.Accesorio
 	add idFabricante varchar(255) default 'No especificado' foreign key references ESTUDIANTES_CON_INSOMNIO.Fabricante(idFabricante);
 
 insert into ESTUDIANTES_CON_INSOMNIO.ItemPC(idFactura, idCodigoPc, cantidad, precio)
-	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(PC_CODIGO) cantidad, 1.2 * count(PC_CODIGO)*(select sum(COMPRA_PRECIO) from gd_esquema.Maestra where PC_CODIGO is not null group by ) / (select count(COMPRA_PRECIO) from gd_esquema.Maestra where PC_CODIGO is not null group by COMPRA_NUMERO) precio
+	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(PC_CODIGO) cantidad, 1.2 * count(PC_CODIGO) * sum(COMPRA_PRECIO) / count(COMPRA_PRECIO) precio
 	from gd_esquema.Maestra
 	where FACTURA_NUMERO is not null and PC_CODIGO is not null
-	group by FACTURA_NUMERO;
-
+	group by FACTURA_NUMERO, PC_CODIGO;
+	/*
 insert into ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(idFactura, codAccesorio, cantidad, precio)
 	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, count(ACCESORIO_CODIGO)*(select sum(COMPRA_PRECIO) from gd_esquema.Maestra where ACCESORIO_CODIGO is not null) / (select count(COMPRA_PRECIO) from gd_esquema.Maestra where ACCESORIO_CODIGO is not null) precio
 	from gd_esquema.Maestra
 	where ACCESORIO_CODIGO is not null and FACTURA_NUMERO is not null
 	group by FACTURA_NUMERO
 	order by FACTURA_NUMERO;
-	/*
+	
 set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura on;
 insert into ESTUDIANTES_CON_INSOMNIO.Factura(idFactura, precio, direccionSucursal, ciudadSucursal, fechaFacturacion, idCliente)
 	select distinct FACTURA_NUMERO idFactura, sum(ItemPC.precio) + sum(ItemAccesorio.precio) precio,SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, FACTURA_FECHA fechaFacturacion, Cliente.idCliente
