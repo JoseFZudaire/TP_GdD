@@ -292,9 +292,8 @@ insert into ESTUDIANTES_CON_INSOMNIO.Factura(idFactura, precio, direccionSucursa
 	--group by FACTURA_NUMERO, CIUDAD, FACTURA_FECHA, idCliente, SUCURSAL_DIR, PC_CODIGO;
 set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura off;
 
-/*alter table ESTUDIANTES_CON_INSOMNIO.ItemPC
+alter table ESTUDIANTES_CON_INSOMNIO.ItemPC
 	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura);
 
 alter table ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
 	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura);
-	*/
