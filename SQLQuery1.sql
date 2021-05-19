@@ -4,6 +4,8 @@ go
 create schema ESTUDIANTES_CON_INSOMNIO;
 go
 
+-- creación de tablas
+
 create table ESTUDIANTES_CON_INSOMNIO.Fabricante(
 	idFabricante varchar(255) not null primary key,
 	telefono decimal(18,0)
@@ -133,6 +135,8 @@ create table ESTUDIANTES_CON_INSOMNIO.CompraPC(
 	precio decimal(18,2) not null
 );
 
+-- creación de índices para cada unas de las tablas sobre la/s PK
+
 create index indiceFabricante on ESTUDIANTES_CON_INSOMNIO.Fabricante(idFabricante);
 
 create index indiceMemoriaRAM on ESTUDIANTES_CON_INSOMNIO.MemoriaRAM(codRAM);
@@ -162,6 +166,8 @@ create index indiceItemPC on ESTUDIANTES_CON_INSOMNIO.ItemPC(idItemPC);
 create index indiceCompraAccesorio on ESTUDIANTES_CON_INSOMNIO.CompraAccesorio(idCompraAccesorio);
 
 create index indiceCompraPC on ESTUDIANTES_CON_INSOMNIO.CompraPC(idCompraPC);
+
+-- Migración de Datos
 
 insert into ESTUDIANTES_CON_INSOMNIO.Fabricante (idFabricante)
 	select  distinct DISCO_RIGIDO_FABRICANTE nombre
@@ -253,6 +259,8 @@ insert into ESTUDIANTES_CON_INSOMNIO.Accesorio(codAccesorio, descripcion)
 	order by ACCESORIO_CODIGO;
 set identity_insert ESTUDIANTES_CON_INSOMNIO.Accesorio off;
 
+-- Añadimos el atributo Fabricante a Accesorio, que en la tabla dada por la cátedra no tenía datos
+
 alter table ESTUDIANTES_CON_INSOMNIO.Accesorio
 	add idFabricante varchar(255) default 'No especificado' foreign key references ESTUDIANTES_CON_INSOMNIO.Fabricante(idFabricante)
 	on delete cascade
@@ -290,6 +298,9 @@ insert into ESTUDIANTES_CON_INSOMNIO.Factura(idFactura, precio, direccionSucursa
 	group by FACTURA_NUMERO, SUCURSAL_DIR, CIUDAD, FACTURA_FECHA, Cliente.idCliente;
 set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura off;
 
+-- agregamos FK a las tablas de ítem ahora, porque si los agregábamos antes se nos dificultaba  crear la tabla Item, 
+-- por lo que no podríamos usar los atributos ItemPC.precio y ItemPC.cantidad para calcular el precio de la factura
+
 alter table ESTUDIANTES_CON_INSOMNIO.ItemPC
 	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura)
 	on delete cascade
@@ -300,6 +311,8 @@ alter table ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
 	on delete cascade
 	on update cascade;
 go
+
+-- creación de las vistas
 
 create view vistaFabricante as
 select * from ESTUDIANTES_CON_INSOMNIO.Fabricante;
@@ -360,6 +373,9 @@ go
 create view vistaCompraPC as
 select * from ESTUDIANTES_CON_INSOMNIO.CompraPC;
 go
+
+-- creación de los triggers para evitar que se borren datos ya insertados
+-- (medida de seguridad)
 
 create trigger borrarAccesorios
 on ESTUDIANTES_CON_INSOMNIO.Accesorio
