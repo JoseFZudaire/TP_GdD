@@ -218,6 +218,14 @@ insert into ESTUDIANTES_CON_INSOMNIO.PC(idCodigoPC, alto, ancho, profundidad, co
 	where PC_CODIGO is not null
 	order by PC_CODIGO;
 
+set identity_insert ESTUDIANTES_CON_INSOMNIO.Accesorio on;
+insert into ESTUDIANTES_CON_INSOMNIO.Accesorio(codAccesorio, descripcion)
+	select distinct ACCESORIO_CODIGO codAccesorio, AC_DESCRIPCION descripcion
+	from gd_esquema.Maestra
+	where ACCESORIO_CODIGO is not null
+	order by ACCESORIO_CODIGO;
+set identity_insert ESTUDIANTES_CON_INSOMNIO.Accesorio off;
+
 insert into ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, mail, telefono, ciudadSucursal)
 	select distinct SUCURSAL_DIR direccionSucursal, SUCURSAL_MAIL mail, SUCURSAL_TEL telefono, CIUDAD ciudadSucursal
 	from gd_esquema.Maestra;
@@ -239,8 +247,8 @@ set identity_insert ESTUDIANTES_CON_INSOMNIO.Compra off;
 insert into ESTUDIANTES_CON_INSOMNIO.CompraAccesorio(cantidad, precio, codAccesorio, idCompra)
 	select COMPRA_CANTIDAD cantidad, COMPRA_PRECIO precio, Accesorio.codAccesorio codAccesorio, Compra.idCompra idCompra
 	from gd_esquema.Maestra Maestra
-		join ESTUDIANTES_CON_INSOMNIO.Compra Compra on Maestra.COMPRA_NUMERO = Compra.idCompra
-		join ESTUDIANTES_CON_INSOMNIO.Accesorio Accesorio on Maestra.ACCESORIO_CODIGO = Accesorio.codAccesorio
+		left join ESTUDIANTES_CON_INSOMNIO.Compra Compra on Maestra.COMPRA_NUMERO = Compra.idCompra
+		left join ESTUDIANTES_CON_INSOMNIO.Accesorio Accesorio on Maestra.ACCESORIO_CODIGO = Accesorio.codAccesorio
 	where ACCESORIO_CODIGO is not null and COMPRA_NUMERO is not null
 	order by COMPRA_NUMERO;
 
@@ -250,14 +258,6 @@ insert into ESTUDIANTES_CON_INSOMNIO.CompraPC(cantidad, precio, idCodigoPc, idCo
 		join ESTUDIANTES_CON_INSOMNIO.Compra Compra on Maestra.COMPRA_NUMERO = Compra.idCompra
 	where PC_CODIGO is not null and COMPRA_NUMERO is not null
 	order by COMPRA_NUMERO;
-
-set identity_insert ESTUDIANTES_CON_INSOMNIO.Accesorio on;
-insert into ESTUDIANTES_CON_INSOMNIO.Accesorio(codAccesorio, descripcion)
-	select distinct ACCESORIO_CODIGO codAccesorio, AC_DESCRIPCION descripcion
-	from gd_esquema.Maestra
-	where ACCESORIO_CODIGO is not null
-	order by ACCESORIO_CODIGO;
-set identity_insert ESTUDIANTES_CON_INSOMNIO.Accesorio off;
 
 -- Añadimos el atributo Fabricante a Accesorio, que en la tabla dada por la cátedra no tenía datos
 
@@ -269,7 +269,7 @@ alter table ESTUDIANTES_CON_INSOMNIO.Accesorio
 insert into ESTUDIANTES_CON_INSOMNIO.ItemPC(idFactura, idCodigoPc, cantidad, precio)
 	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(FACTURA_NUMERO) cantidad, 1.2 * max(CompraPC.precio) precio
 	from gd_esquema.Maestra Maestra
-		cross apply (
+		outer apply (
 			select top 1 *
 			from ESTUDIANTES_CON_INSOMNIO.CompraPC CompraPC
 			where CompraPC.idCodigoPc = Maestra.PC_CODIGO) CompraPC
@@ -278,18 +278,18 @@ insert into ESTUDIANTES_CON_INSOMNIO.ItemPC(idFactura, idCodigoPc, cantidad, pre
 	order by FACTURA_NUMERO;
 
 insert into ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(idFactura, codAccesorio, cantidad, precio)
-	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, CompraAccesorio.precio precio
+	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, (max(CompraAccesorio.precio)/max(CompraAccesorio.cantidad)) precio
 	from gd_esquema.Maestra
-		cross apply (
+		outer apply (
 			select top 1 *
 			from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio CompraAccesorio
-			where CompraAccesorio.codAccesorio = Maestra.PC_CODIGO) CompraAccesorio
+			where CompraAccesorio.codAccesorio = Maestra.ACCESORIO_CODIGO) CompraAccesorio
 	where ACCESORIO_CODIGO is not null and FACTURA_NUMERO is not null
-	group by FACTURA_NUMERO, ACCESORIO_CODIGO, CompraAccesorio.precio;
+	group by FACTURA_NUMERO, ACCESORIO_CODIGO;
 	
 set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura on;
 insert into ESTUDIANTES_CON_INSOMNIO.Factura(idFactura, precio, direccionSucursal, ciudadSucursal, fechaFacturacion, idCliente)
-	select distinct FACTURA_NUMERO idFactura, coalesce(sum(ItemPC.precio*ItemPC.cantidad) + sum(ItemAccesorio.precio*ItemAccesorio.cantidad), sum(ItemPC.precio*ItemPC.cantidad), sum(ItemAccesorio.precio*ItemAccesorio.cantidad)) precio, SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, FACTURA_FECHA fechaFacturacion, Cliente.idCliente idCliente
+	select distinct FACTURA_NUMERO idFactura, coalesce(sum(ItemPC.precio) + sum(ItemAccesorio.precio), sum(ItemPC.precio), sum(ItemAccesorio.precio)) precio, SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, FACTURA_FECHA fechaFacturacion, Cliente.idCliente idCliente
 	from gd_esquema.Maestra Maestra
 		left join ESTUDIANTES_CON_INSOMNIO.Cliente Cliente on Maestra.CLIENTE_DNI = Cliente.dni and Maestra.CLIENTE_APELLIDO = Cliente.apellido and Maestra.CLIENTE_NOMBRE = Cliente.nombre
 		full join ESTUDIANTES_CON_INSOMNIO.ItemPC ItemPC on Maestra.FACTURA_NUMERO = ItemPC.idFactura and Maestra.PC_CODIGO = ItemPC.idCodigoPc
