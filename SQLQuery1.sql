@@ -104,7 +104,7 @@ create table ESTUDIANTES_CON_INSOMNIO.Accesorio(
 
 create table ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(
 	idItemAccesorio decimal(18,0) not null identity(1,1) primary key,
-	idFactura decimal(18,0) not null foreign key references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura),
+	idFactura decimal(18,0) not null /*foreign key references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura)*/,
 	codAccesorio decimal(18,0) not null foreign key references ESTUDIANTES_CON_INSOMNIO.Accesorio(codAccesorio),
 	cantidad decimal(18,0) not null,
 	precio decimal(18,2) not null
@@ -112,7 +112,7 @@ create table ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(
 
 create table ESTUDIANTES_CON_INSOMNIO.ItemPC(
 	idItemPC decimal(18,0) not null identity(1,1) primary key,
-	idFactura decimal(18,0) not null foreign key references ESTUDIANTES_CON_INSOMNIO.Compra(idCompra),
+	idFactura decimal(18,0) not null,
 	idCodigoPc varchar(50) not null foreign key references ESTUDIANTES_CON_INSOMNIO.PC(idCodigoPC),
 	cantidad decimal(18,0) not null,
 	precio decimal(18,2) not null
@@ -258,26 +258,43 @@ alter table ESTUDIANTES_CON_INSOMNIO.Accesorio
 	add idFabricante varchar(255) default 'No especificado' foreign key references ESTUDIANTES_CON_INSOMNIO.Fabricante(idFabricante);
 
 insert into ESTUDIANTES_CON_INSOMNIO.ItemPC(idFactura, idCodigoPc, cantidad, precio)
-	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(PC_CODIGO) cantidad, 1.2 * count(PC_CODIGO) * sum(COMPRA_PRECIO) / count(COMPRA_PRECIO) precio
-	from gd_esquema.Maestra
+	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(FACTURA_NUMERO) cantidad, 1.2 * max(CompraPC.precio) precio
+	from gd_esquema.Maestra Maestra
+		cross apply (
+			select top 1 *
+			from ESTUDIANTES_CON_INSOMNIO.CompraPC CompraPC
+			where CompraPC.idCodigoPc = Maestra.PC_CODIGO) CompraPC
+		--join ESTUDIANTES_CON_INSOMNIO.CompraPC CompraPC on Maestra.PC_CODIGO = CompraPC.idCodigoPc
+		--join ESTUDIANTES_CON_INSOMNIO.Factura Factura on Maestra.FACTURA_NUMERO = Factura.idFactura
 	where FACTURA_NUMERO is not null and PC_CODIGO is not null
-	group by FACTURA_NUMERO, PC_CODIGO;
-	/*
-insert into ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(idFactura, codAccesorio, cantidad, precio)
-	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, count(ACCESORIO_CODIGO)*(select sum(COMPRA_PRECIO) from gd_esquema.Maestra where ACCESORIO_CODIGO is not null) / (select count(COMPRA_PRECIO) from gd_esquema.Maestra where ACCESORIO_CODIGO is not null) precio
-	from gd_esquema.Maestra
-	where ACCESORIO_CODIGO is not null and FACTURA_NUMERO is not null
-	group by FACTURA_NUMERO
+	group by FACTURA_NUMERO, PC_CODIGO
 	order by FACTURA_NUMERO;
+
+insert into ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(idFactura, codAccesorio, cantidad, precio)
+	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, CompraAccesorio.precio precio
+	from gd_esquema.Maestra
+		cross apply (
+			select top 1 *
+			from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio CompraAccesorio
+			where CompraAccesorio.codAccesorio = Maestra.PC_CODIGO) CompraAccesorio
+		--join ESTUDIANTES_CON_INSOMNIO.CompraAccesorio CompraAccesorio on Maestra.PC_CODIGO = CompraAccesorio.idCompraAccesorio
+	where ACCESORIO_CODIGO is not null and FACTURA_NUMERO is not null
+	group by FACTURA_NUMERO, ACCESORIO_CODIGO, CompraAccesorio.precio;
 	
 set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura on;
 insert into ESTUDIANTES_CON_INSOMNIO.Factura(idFactura, precio, direccionSucursal, ciudadSucursal, fechaFacturacion, idCliente)
-	select distinct FACTURA_NUMERO idFactura, sum(ItemPC.precio) + sum(ItemAccesorio.precio) precio,SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, FACTURA_FECHA fechaFacturacion, Cliente.idCliente
+	select FACTURA_NUMERO idFactura, coalesce(ItemPC.precio*ItemPC.cantidad + ItemAccesorio.precio*ItemAccesorio.cantidad, ItemPC.precio*ItemPC.cantidad, ItemAccesorio.precio*ItemAccesorio.cantidad) precio, SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, FACTURA_FECHA fechaFacturacion, Cliente.idCliente
 	from gd_esquema.Maestra Maestra
 		join ESTUDIANTES_CON_INSOMNIO.Cliente Cliente on Maestra.CLIENTE_DNI = Cliente.dni and Maestra.CLIENTE_APELLIDO = Cliente.apellido and Maestra.CLIENTE_NOMBRE = Cliente.nombre
-		left join ESTUDIANTES_CON_INSOMNIO.ItemPC ItemPC on Maestra.FACTURA_NUMERO = ItemPC.idFactura
-		left join ESTUDIANTES_CON_INSOMNIO.ItemAccesorio ItemAccesorio on Maestra.FACTURA_NUMERO = ItemAccesorio.idFactura
-	where FACTURA_NUMERO is not null
-	group by FACTURA_NUMERO, CIUDAD, FACTURA_FECHA, idCliente, SUCURSAL_DIR
-	order by FACTURA_NUMERO;
-set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura off;*/
+		full join ESTUDIANTES_CON_INSOMNIO.ItemPC ItemPC on Maestra.FACTURA_NUMERO = ItemPC.idFactura and Maestra.PC_CODIGO = ItemPC.idCodigoPc
+		full join ESTUDIANTES_CON_INSOMNIO.ItemAccesorio on Maestra.FACTURA_NUMERO = ItemAccesorio.idFactura and Maestra.ACCESORIO_CODIGO = ItemAccesorio.codAccesorio
+	where FACTURA_NUMERO is not null;
+	--group by FACTURA_NUMERO, CIUDAD, FACTURA_FECHA, idCliente, SUCURSAL_DIR, PC_CODIGO;
+set identity_insert ESTUDIANTES_CON_INSOMNIO.Factura off;
+
+/*alter table ESTUDIANTES_CON_INSOMNIO.ItemPC
+	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura);
+
+alter table ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
+	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.Factura(idFactura);
+	*/
