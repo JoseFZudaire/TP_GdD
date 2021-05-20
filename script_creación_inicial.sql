@@ -266,6 +266,9 @@ alter table ESTUDIANTES_CON_INSOMNIO.Accesorio
 	on delete cascade
 	on update cascade;
 
+set ansi_warnings off;
+go
+
 insert into ESTUDIANTES_CON_INSOMNIO.ItemPC(idFactura, idCodigoPc, cantidad, precio)
 	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(FACTURA_NUMERO) cantidad, 1.2 * max(CompraPC.precio) precio
 	from gd_esquema.Maestra Maestra
@@ -278,7 +281,7 @@ insert into ESTUDIANTES_CON_INSOMNIO.ItemPC(idFactura, idCodigoPc, cantidad, pre
 	order by FACTURA_NUMERO;
 
 insert into ESTUDIANTES_CON_INSOMNIO.ItemAccesorio(idFactura, codAccesorio, cantidad, precio)
-	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, (max(CompraAccesorio.precio)/max(CompraAccesorio.cantidad)) precio
+	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, coalesce((max(CompraAccesorio.precio)/max(CompraAccesorio.cantidad)), 0) precio
 	from gd_esquema.Maestra
 		outer apply (
 			select top 1 *
@@ -314,168 +317,168 @@ go
 
 -- creación de las vistas
 
-create view vistaFabricante as
+create view ESTUDIANTES_CON_INSOMNIO.vistaFabricante as
 select * from ESTUDIANTES_CON_INSOMNIO.Fabricante;
 go
 
-create view vistaMemoriaRAM as
+create view ESTUDIANTES_CON_INSOMNIO.vistaMemoriaRAM as
 select * from ESTUDIANTES_CON_INSOMNIO.MemoriaRAM;
 go 
 
-create view vistaMicroprocesador as
+create view ESTUDIANTES_CON_INSOMNIO.vistaMicroprocesador as
 select * from ESTUDIANTES_CON_INSOMNIO.Microprocesador;
 go
 
-create view vistaDiscoRigido as
+create view ESTUDIANTES_CON_INSOMNIO.vistaDiscoRigido as
 select * from ESTUDIANTES_CON_INSOMNIO.DiscoRigido;
 go
 
-create view vistaPlacaVideo as
+create view ESTUDIANTES_CON_INSOMNIO.vistaPlacaVideo as
 select * from ESTUDIANTES_CON_INSOMNIO.PlacaVideo;
 go
 
-create view vistaPC as
+create view ESTUDIANTES_CON_INSOMNIO.vistaPC as
 select * from ESTUDIANTES_CON_INSOMNIO.PC;
 go
 
-create view vistaSucursal as
+create view ESTUDIANTES_CON_INSOMNIO.vistaSucursal as
 select * from ESTUDIANTES_CON_INSOMNIO.Sucursal;
 go
 
-create view vistaCliente as
+create view ESTUDIANTES_CON_INSOMNIO.vistaCliente as
 select * from ESTUDIANTES_CON_INSOMNIO.Cliente;
 go
 
-create view vistaFactura as
+create view ESTUDIANTES_CON_INSOMNIO.vistaFactura as
 select * from ESTUDIANTES_CON_INSOMNIO.Factura;
 go
 
-create view vistaCompra as
+create view ESTUDIANTES_CON_INSOMNIO.vistaCompra as
 select * from ESTUDIANTES_CON_INSOMNIO.Compra;
 go
 
-create view vistaAccesorio as
+create view ESTUDIANTES_CON_INSOMNIO.vistaAccesorio as
 select * from ESTUDIANTES_CON_INSOMNIO.Accesorio;
 go
 
-create view vistaItemAccesorio as
+create view ESTUDIANTES_CON_INSOMNIO.vistaItemAccesorio as
 select * from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio;
 go
 
-create view vistaItemPC as
+create view ESTUDIANTES_CON_INSOMNIO.vistaItemPC as
 select * from ESTUDIANTES_CON_INSOMNIO.ItemPC;
 go
 
-create view vistaCompraAccesorio as
+create view ESTUDIANTES_CON_INSOMNIO.vistaCompraAccesorio as
 select * from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio;
 go
 
-create view vistaCompraPC as
+create view ESTUDIANTES_CON_INSOMNIO.vistaCompraPC as
 select * from ESTUDIANTES_CON_INSOMNIO.CompraPC;
 go
 
 -- creación de los triggers para evitar que se borren datos ya insertados
 -- (medida de seguridad)
 
-create trigger borrarAccesorios
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarAccesorios
 on ESTUDIANTES_CON_INSOMNIO.Accesorio
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarClientes
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarClientes
 on ESTUDIANTES_CON_INSOMNIO.Cliente
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarCompras
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarCompras
 on ESTUDIANTES_CON_INSOMNIO.Compra
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarCompraAccesorios
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarCompraAccesorios
 on ESTUDIANTES_CON_INSOMNIO.CompraAccesorio
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarCompraPCs
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarCompraPCs
 on ESTUDIANTES_CON_INSOMNIO.CompraPC
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarDiscosRigidos
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarDiscosRigidos
 on ESTUDIANTES_CON_INSOMNIO.DiscoRigido
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarFabricantes
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarFabricantes
 on ESTUDIANTES_CON_INSOMNIO.Fabricante
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarFacturas
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarFacturas
 on ESTUDIANTES_CON_INSOMNIO.Factura
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarItemAccesorios
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarItemAccesorios
 on ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarItemPCs
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarItemPCs
 on ESTUDIANTES_CON_INSOMNIO.ItemPC
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarMemoriasRAM
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarMemoriasRAM
 on ESTUDIANTES_CON_INSOMNIO.MemoriaRAM
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarMicroprocesadores
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarMicroprocesadores
 on ESTUDIANTES_CON_INSOMNIO.Microprocesador
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarPCs
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarPCs
 on ESTUDIANTES_CON_INSOMNIO.PC
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarPlacasVideo
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarPlacasVideo
 on ESTUDIANTES_CON_INSOMNIO.PlacaVideo
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
 go
 
-create trigger borrarSucursales
+create trigger ESTUDIANTES_CON_INSOMNIO.borrarSucursales
 on ESTUDIANTES_CON_INSOMNIO.Sucursal
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
