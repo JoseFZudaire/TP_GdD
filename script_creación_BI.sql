@@ -219,12 +219,16 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(direccionSucursal, mail, telefo
 	select distinct Sucursal.direccionSucursal direccionSucursal, Sucursal.mail mail, Sucursal.telefono telefono, Sucursal.ciudadSucursal ciudadSucursal
 	from ESTUDIANTES_CON_INSOMNIO.Sucursal;
 
-/*insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(sexo, edadRango)
+insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(edadRango, sexo)
 	select 
-	(select 
-	case Cliente.fechaNacimiento)
+	(case 
+	when (year(Cliente.fechaNacimiento) <= 2003 and year(Cliente.fechaNacimiento) > 1991) then '18-30 años'
+	when (year(Cliente.fechaNacimiento) <= 1991 and year(Cliente.fechaNacimiento) > 1971) then '31-50 años' 
+	when (year(Cliente.fechaNacimiento) <= 1971) then '> 50 años' 
+	else 'menor de edad'
+	end) edadRango, 'soy un panda' sexo
 	from ESTUDIANTES_CON_INSOMNIO.Cliente
-	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;*/
+	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;
 
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Compra on;
 insert into ESTUDIANTES_CON_INSOMNIO.BI_Compra(idCompra, direccionSucursal, ciudadSucursal, añoCompra, mesCompra, precio)
