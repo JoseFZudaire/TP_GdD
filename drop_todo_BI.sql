@@ -32,5 +32,3 @@ drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Microprocesador;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PC;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PlacaVideo;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Sucursal;
-
-drop schema ESTUDIANTES_CON_INSOMNIO;

@@ -219,18 +219,18 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(direccionSucursal, mail, telefo
 	select distinct Sucursal.direccionSucursal direccionSucursal, Sucursal.mail mail, Sucursal.telefono telefono, Sucursal.ciudadSucursal ciudadSucursal
 	from ESTUDIANTES_CON_INSOMNIO.Sucursal;
 
-/*
-insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(sexo, edadRango)
-	select distinct CLIENTE_APELLIDO apellido, CLIENTE_NOMBRE nombre, CLIENTE_DNI dni, CLIENTE_DIRECCION direccion, CLIENTE_MAIL mail, CLIENTE_TELEFONO telefono, CLIENTE_FECHA_NACIMIENTO fechaNacimiento
+/*insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(sexo, edadRango)
+	select 
+	(select 
+	case Cliente.fechaNacimiento)
 	from ESTUDIANTES_CON_INSOMNIO.Cliente
-	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;
-*/
+	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;*/
+
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Compra on;
 insert into ESTUDIANTES_CON_INSOMNIO.BI_Compra(idCompra, direccionSucursal, ciudadSucursal, añoCompra, mesCompra, precio)
 	select distinct Compra.idCompra idCompra, Compra.direccionSucursal direccionSucursal, Compra.ciudadSucursal ciudadSucursal, year(Compra.fechaCompra) añoCompra, month(Compra.fechaCompra) mesCompra, Compra.precio precio 
 	from ESTUDIANTES_CON_INSOMNIO.Compra 
 	where Compra.idCompra is not null
-	group by Compra.idCompra, Compra.direccionSucursal, Compra.ciudadSucursal, Compra.fechaCompra
 	order by Compra.idCompra;
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Compra off;
 
