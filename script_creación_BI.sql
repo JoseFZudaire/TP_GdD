@@ -219,38 +219,36 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(direccionSucursal, mail, telefo
 	select distinct Sucursal.direccionSucursal direccionSucursal, Sucursal.mail mail, Sucursal.telefono telefono, Sucursal.ciudadSucursal ciudadSucursal
 	from ESTUDIANTES_CON_INSOMNIO.Sucursal;
 
-insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(apellido, nombre, dni, direccion, mail, telefono, fechaNacimiento)
+/*
+insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(sexo, edadRango)
 	select distinct CLIENTE_APELLIDO apellido, CLIENTE_NOMBRE nombre, CLIENTE_DNI dni, CLIENTE_DIRECCION direccion, CLIENTE_MAIL mail, CLIENTE_TELEFONO telefono, CLIENTE_FECHA_NACIMIENTO fechaNacimiento
-	from gd_esquema.Maestra
-	where CLIENTE_APELLIDO is not null and CLIENTE_NOMBRE is not null and CLIENTE_DNI is not null;
-
+	from ESTUDIANTES_CON_INSOMNIO.Cliente
+	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;
+*/
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Compra on;
-insert into ESTUDIANTES_CON_INSOMNIO.BI_Compra(idCompra, direccionSucursal, ciudadSucursal, fechaCompra, precio)
-	select distinct COMPRA_NUMERO idCompra, SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, COMPRA_FECHA fechaCompra, sum(COMPRA_PRECIO) precio 
-	from gd_esquema.Maestra 
-	where COMPRA_NUMERO is not null
-	group by COMPRA_NUMERO, SUCURSAL_DIR, CIUDAD, COMPRA_FECHA
-	order by COMPRA_NUMERO;
+insert into ESTUDIANTES_CON_INSOMNIO.BI_Compra(idCompra, direccionSucursal, ciudadSucursal, añoCompra, mesCompra, precio)
+	select distinct Compra.idCompra idCompra, Compra.direccionSucursal direccionSucursal, Compra.ciudadSucursal ciudadSucursal, year(Compra.fechaCompra) añoCompra, month(Compra.fechaCompra) mesCompra, Compra.precio precio 
+	from ESTUDIANTES_CON_INSOMNIO.Compra 
+	where Compra.idCompra is not null
+	group by Compra.idCompra, Compra.direccionSucursal, Compra.ciudadSucursal, Compra.fechaCompra
+	order by Compra.idCompra;
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Compra off;
 
 insert into ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio(cantidad, precio, codAccesorio, idCompra)
-	select COMPRA_CANTIDAD cantidad, COMPRA_PRECIO precio, Accesorio.codAccesorio codAccesorio, Compra.idCompra idCompra
-	from gd_esquema.Maestra Maestra
-		left join ESTUDIANTES_CON_INSOMNIO.BI_Compra Compra on Maestra.COMPRA_NUMERO = Compra.idCompra
-		left join ESTUDIANTES_CON_INSOMNIO.BI_Accesorio Accesorio on Maestra.ACCESORIO_CODIGO = Accesorio.codAccesorio
-	where ACCESORIO_CODIGO is not null and COMPRA_NUMERO is not null
-	order by COMPRA_NUMERO;
+	select CompraAccesorio.cantidad cantidad, CompraAccesorio.precio precio, CompraAccesorio.codAccesorio codAccesorio, CompraAccesorio.idCompra idCompra
+	from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio
+	where CompraAccesorio.idCompraAccesorio is not null
+	order by CompraAccesorio.idCompraAccesorio;
 
 insert into ESTUDIANTES_CON_INSOMNIO.BI_CompraPC(cantidad, precio, idCodigoPc, idCompra)
-	select COMPRA_CANTIDAD cantidad, COMPRA_PRECIO precio, PC_CODIGO idCodigoPc, Compra.idCompra idCompra
-	from gd_esquema.Maestra Maestra
-		join ESTUDIANTES_CON_INSOMNIO.BI_Compra Compra on Maestra.COMPRA_NUMERO = Compra.idCompra
-	where PC_CODIGO is not null and COMPRA_NUMERO is not null
-	order by COMPRA_NUMERO;
+	select CompraPC.cantidad cantidad, CompraPC.precio precio, CompraPC.idCodigoPc idCodigoPc, CompraPC.idCompra idCompra
+	from ESTUDIANTES_CON_INSOMNIO.CompraPC
+	where CompraPC.idCompraPC is not null
+	order by CompraPC.idCompraPC;
 
 -- Añadimos el atributo Fabricante a Accesorio, que en la tabla dada por la cátedra no tenía datos
 
-alter table ESTUDIANTES_CON_INSOMNIO.Accesorio
+alter table ESTUDIANTES_CON_INSOMNIO.BI_Accesorio
 	add idFabricante varchar(255) default 'No especificado' foreign key references ESTUDIANTES_CON_INSOMNIO.BI_Fabricante(idFabricante)
 	on delete cascade
 	on update cascade;
@@ -259,35 +257,21 @@ set ansi_warnings off;
 go
 
 insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(idFactura, idCodigoPc, cantidad, precio)
-	select FACTURA_NUMERO idFactura, PC_CODIGO idCodigoPc, count(FACTURA_NUMERO) cantidad, 1.2 * max(CompraPC.precio) precio
-	from gd_esquema.Maestra Maestra
-		outer apply (
-			select top 1 *
-			from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC CompraPC
-			where CompraPC.idCodigoPc = Maestra.PC_CODIGO) CompraPC
-	where FACTURA_NUMERO is not null and PC_CODIGO is not null
-	group by FACTURA_NUMERO, PC_CODIGO
-	order by FACTURA_NUMERO;
+	select ItemPC.idFactura idFactura, ItemPC.idCodigoPc idCodigoPc, ItemPC.cantidad cantidad, ItemPC.precio precio
+	from ESTUDIANTES_CON_INSOMNIO.ItemPC
+	where ItemPC.idItemPC is not null
+	order by ItemPC.idFactura;
 
 insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(idFactura, codAccesorio, cantidad, precio)
-	select FACTURA_NUMERO idFactura, ACCESORIO_CODIGO codAccesorio, count(ACCESORIO_CODIGO) cantidad, coalesce((max(CompraAccesorio.precio)/max(CompraAccesorio.cantidad)), 0) precio
-	from gd_esquema.Maestra
-		outer apply (
-			select top 1 *
-			from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio CompraAccesorio
-			where CompraAccesorio.codAccesorio = Maestra.ACCESORIO_CODIGO) CompraAccesorio
-	where ACCESORIO_CODIGO is not null and FACTURA_NUMERO is not null
-	group by FACTURA_NUMERO, ACCESORIO_CODIGO;
+	select ItemAccesorio.idFactura idFactura, ItemAccesorio.codAccesorio codAccesorio, ItemAccesorio.cantidad cantidad, ItemAccesorio.precio precio
+	from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
+	where ItemAccesorio.idItemAccesorio is not null;
 	
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Factura on;
-insert into ESTUDIANTES_CON_INSOMNIO.BI_Factura(idFactura, precio, direccionSucursal, ciudadSucursal, fechaFacturacion, idCliente)
-	select distinct FACTURA_NUMERO idFactura, coalesce(sum(ItemPC.precio) + sum(ItemAccesorio.precio), sum(ItemPC.precio), sum(ItemAccesorio.precio)) precio, SUCURSAL_DIR direccionSucursal, CIUDAD ciudadSucursal, FACTURA_FECHA fechaFacturacion, Cliente.idCliente idCliente
-	from gd_esquema.Maestra Maestra
-		left join ESTUDIANTES_CON_INSOMNIO.BI_Cliente Cliente on Maestra.CLIENTE_DNI = Cliente.dni and Maestra.CLIENTE_APELLIDO = Cliente.apellido and Maestra.CLIENTE_NOMBRE = Cliente.nombre
-		full join ESTUDIANTES_CON_INSOMNIO.BI_ItemPC ItemPC on Maestra.FACTURA_NUMERO = ItemPC.idFactura and Maestra.PC_CODIGO = ItemPC.idCodigoPc
-		full join ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio ItemAccesorio on Maestra.FACTURA_NUMERO = ItemAccesorio.idFactura and Maestra.ACCESORIO_CODIGO = ItemAccesorio.codAccesorio
-	where FACTURA_NUMERO is not null
-	group by FACTURA_NUMERO, SUCURSAL_DIR, CIUDAD, FACTURA_FECHA, Cliente.idCliente;
+insert into ESTUDIANTES_CON_INSOMNIO.BI_Factura(idFactura, precio, direccionSucursal, ciudadSucursal, añoFactura, mesFactura, idCliente)
+	select distinct Factura.idFactura idFactura, Factura.precio precio, Factura.direccionSucursal direccionSucursal, Factura.ciudadSucursal ciudadSucursal, year(Factura.fechaFacturacion) añoFactura, month(Factura.fechaFacturacion) mesFactura, Factura.idCliente idCliente
+	from ESTUDIANTES_CON_INSOMNIO.Factura
+	where Factura.idFactura is not null;
 set identity_insert ESTUDIANTES_CON_INSOMNIO.BI_Factura off;
 
 -- agregamos FK a las tablas de ítem ahora, porque si los agregábamos antes se nos dificultaba  crear la tabla Item, 
