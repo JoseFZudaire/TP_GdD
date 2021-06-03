@@ -292,14 +292,25 @@ alter table ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio
 	on update cascade;
 go
 
+
 -- creación de las vistas
 
 -- vistas de PCs
 
-/*create view ESTUDIANTES_CON_INSOMNIO.vista_Promedio_Tiempo_PC as
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_PC as
+		SELECT PC.idCodigoPC ,AVG(DATEDIFF(DAY, C.fechaCompra,F.fechaFacturacion)) Promedio_Tiempo_Stock_PC
+		FROM ESTUDIANTES_CON_INSOMNIO.CompraPC CPC JOIN ESTUDIANTES_CON_INSOMNIO.Compra C ON CPC.idCompra = C.idCompra
+		JOIN ESTUDIANTES_CON_INSOMNIO.PC ON CPC.idCodigoPc = PC.idCodigoPC 
+		JOIN ESTUDIANTES_CON_INSOMNIO.ItemPC IPC ON IPC.idCodigoPc = PC.idCodigoPC
+		JOIN ESTUDIANTES_CON_INSOMNIO.Factura F ON F.idFactura = IPC.idFactura
+		WHERE PC.idCodigoPC IN (SELECT P.idCodigoPC FROM ESTUDIANTES_CON_INSOMNIO.PC P WHERE P.idCodigoPC = IPC.idCodigoPc)
+		GROUP BY PC.idCodigoPC
+	GO
 
-go
-*/
+/*
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_PC
+select * from ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_PC
+ */
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_PC as
 select avg(BI_ItemPC.precio) precioPromedio, BI_ItemPC.idCodigoPc CodigoPC, 'Venta' tipoOperacion
@@ -336,16 +347,23 @@ go
 
 -- vistas de Accesorios
 
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Accesorio as
-/*select avg(datediff(month, Compra.fechaCompra, Factura.fechaFacturacion)) promedioTiempo, BI_ItemAccesorio.codAccesorio itemAccesorio
-from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio
-	cross join ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
-	left join ESTUDIANTES_CON_INSOMNIO.Compra on BI_CompraAccesorio.idCompra = Compra.idCompra
-	left join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = BI_ItemAccesorio.idFactura
-where BI_ItemAccesorio.codAccesorio = BI_CompraAccesorio.codAccesorio
-group by BI_ItemAccesorio.codAccesorio*/
-go
 
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS AS
+SELECT ACC.codAccesorio ,avg(DATEDIFF(DAY, C.fechaCompra,F.fechaFacturacion)) Promedio_Tiempo_Stock
+	FROM ESTUDIANTES_CON_INSOMNIO.CompraAccesorio CAC JOIN ESTUDIANTES_CON_INSOMNIO.Compra C ON CAC.idCompra = C.idCompra
+	JOIN ESTUDIANTES_CON_INSOMNIO.Accesorio ACC ON CAC.idCompraAccesorio = ACC.codAccesorio 
+	JOIN ESTUDIANTES_CON_INSOMNIO.ItemAccesorio IAC ON IAC.codAccesorio = ACC.codAccesorio
+	JOIN ESTUDIANTES_CON_INSOMNIO.Factura F ON F.idFactura = IAC.idFactura
+	WHERE ACC.codAccesorio IN (SELECT ACC.codAccesorio FROM ESTUDIANTES_CON_INSOMNIO.Accesorio A WHERE  A.codAccesorio = IAC.codAccesorio)
+	group by ACC.codAccesorio
+GO
+SELECT * FROM ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS
+/* PRUEBA DE TEMP Y VISTA
+drop table #TMPTiempoEnStockAccesorios
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS
+SELECT * FROM #TMPTiempoEnStockAccesorios
+SELECT * FROM ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS
+*/
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio as
 select avg(BI_ItemAccesorio.precio) precioPromedio, BI_ItemAccesorio.codAccesorio CodigoAccesorio, 'Venta' tipoOperacion
 from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio 
