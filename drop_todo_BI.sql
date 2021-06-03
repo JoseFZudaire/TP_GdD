@@ -32,3 +32,9 @@ drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Microprocesador;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PC;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PlacaVideo;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Sucursal;
+
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Cant_PC_x_Sucursal_y_mes_PC;
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_PC;
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_Accesorio;
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio;
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_PC;

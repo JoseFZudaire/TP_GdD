@@ -294,6 +294,77 @@ go
 
 -- creación de las vistas
 
+-- vistas de PCs
+
+/*create view ESTUDIANTES_CON_INSOMNIO.vista_Promedio_Tiempo_PC as
+
+go
+*/
+
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_PC as
+select avg(BI_ItemPC.precio) precioPromedio, BI_ItemPC.idCodigoPc CodigoPC, 'Venta' tipoOperacion
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC 
+group by BI_ItemPC.idCodigoPc
+union all
+select avg(BI_CompraPC.precio) precioPromedio, BI_CompraPC.idCodigoPc CodigoPC, 'Compra' tipoOperacion
+from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC
+group by BI_CompraPC.idCodigoPc
+go
+
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Cant_PC_x_Sucursal_y_mes_PC as
+select count(BI_ItemPC.cantidad) cantidad, BI_Factura.ciudadSucursal sucursal, BI_Factura.mesFactura mes, BI_Factura.añoFactura año, 'Venta' tipoOperacion
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC 
+	left join ESTUDIANTES_CON_INSOMNIO.BI_Factura on BI_ItemPC.idFactura = BI_Factura.idFactura
+group by BI_Factura.añoFactura, BI_Factura.mesFactura, BI_Factura.ciudadSucursal
+union all
+select count(BI_CompraPC.cantidad) cantidad, BI_Compra.ciudadSucursal sucursal, BI_Compra.mesCompra mes, BI_Compra.añoCompra año, 'Compra' tipoOperacion
+from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC
+	left join ESTUDIANTES_CON_INSOMNIO.BI_Compra on BI_CompraPC.idCompra = BI_Compra.idCompra
+group by BI_Compra.añoCompra, BI_Compra.mesCompra, BI_Compra.ciudadSucursal
+go
+
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_PC as
+select coalesce(sum(BI_ItemPC.cantidad * (BI_ItemPC.precio - BI_CompraPC.promedioPrecio)),0) ganancia, BI_Factura.ciudadSucursal sucursal, BI_Factura.mesFactura mes, BI_Factura.añoFactura año
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC 
+	left join ESTUDIANTES_CON_INSOMNIO.BI_Factura on BI_ItemPC.idFactura = BI_Factura.idFactura		
+	outer apply (
+		select avg(BI_CompraPC.precio) as promedioPrecio
+		from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC
+		where BI_CompraPC.idCodigoPc = BI_ItemPC.idCodigoPc) BI_CompraPC
+group by BI_Factura.añoFactura, BI_Factura.mesFactura, BI_Factura.ciudadSucursal
+go
+
+-- vistas de Accesorios
+/*
+create view ESTUDIANTES_CON_INSOMNIO.vista_Promedio_Tiempo_Accesorio as
+go
+*/
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio as
+select avg(BI_ItemAccesorio.precio) precioPromedio, BI_ItemAccesorio.codAccesorio CodigoAccesorio, 'Venta' tipoOperacion
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio 
+group by BI_ItemAccesorio.codAccesorio
+union all
+select avg(BI_CompraAccesorio.precio) precioPromedio, BI_CompraAccesorio.codAccesorio CodigoAccesorio, 'Compra' tipoOperacion
+from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
+group by BI_CompraAccesorio.codAccesorio
+go
+
+/*
+create view ESTUDIANTES_CON_INSOMNIO.vista_Cant_PC_x_Sucursal_y_año_Accesorio as
+go
+*/
+
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_Accesorio as
+select coalesce(sum(BI_ItemAccesorio.cantidad * (BI_ItemAccesorio.precio - BI_CompraAccesorio.promedioPrecio)),0) ganancia, BI_Factura.ciudadSucursal sucursal, BI_Factura.mesFactura mes, BI_Factura.añoFactura año
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio 
+	left join ESTUDIANTES_CON_INSOMNIO.BI_Factura on BI_ItemAccesorio.idFactura = BI_Factura.idFactura		
+	outer apply (
+		select avg(BI_CompraAccesorio.precio) as promedioPrecio
+		from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
+		where BI_CompraAccesorio.codAccesorio = BI_ItemAccesorio.codAccesorio) BI_CompraAccesorio
+group by BI_Factura.añoFactura, BI_Factura.mesFactura, BI_Factura.ciudadSucursal
+go
+
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Fabricante as
 select * from ESTUDIANTES_CON_INSOMNIO.BI_Fabricante;
 go
