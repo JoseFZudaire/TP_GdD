@@ -226,7 +226,7 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(edadRango, sexo)
 	when (year(Cliente.fechaNacimiento) <= 1991 and year(Cliente.fechaNacimiento) > 1971) then '31-50 años' 
 	when (year(Cliente.fechaNacimiento) <= 1971) then '> 50 años' 
 	else 'menor de edad'
-	end) edadRango, 'soy un panda' sexo
+	end) edadRango, 'Indefinido' sexo
 	from ESTUDIANTES_CON_INSOMNIO.Cliente
 	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;
 
@@ -335,10 +335,18 @@ group by BI_Factura.añoFactura, BI_Factura.mesFactura, BI_Factura.ciudadSucursal
 go
 
 -- vistas de Accesorios
-/*
-create view ESTUDIANTES_CON_INSOMNIO.vista_Promedio_Tiempo_Accesorio as
+
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Accesorio as
+select avg(datediff(month, Compra.fechaCompra, Factura.fechaFacturacion)) promedioTiempo, BI_ItemAccesorio.idItemAccesorio itemAccesorio
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio
+	cross join ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
+	left join ESTUDIANTES_CON_INSOMNIO.Compra on BI_CompraAccesorio.idCompra = Compra.idCompra
+	left join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = BI_ItemAccesorio.idFactura
+where BI_ItemAccesorio.codAccesorio = BI_CompraAccesorio.codAccesorio
+group by BI_ItemAccesorio.codAccesorio
 go
-*/
+
+
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio as
 select avg(BI_ItemAccesorio.precio) precioPromedio, BI_ItemAccesorio.codAccesorio CodigoAccesorio, 'Venta' tipoOperacion
 from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio 
@@ -349,10 +357,12 @@ from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
 group by BI_CompraAccesorio.codAccesorio
 go
 
-/*
-create view ESTUDIANTES_CON_INSOMNIO.vista_Cant_PC_x_Sucursal_y_año_Accesorio as
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Maximo_Stock_x_Sucursal_y_año_Accesorios as
+select sum(BI_CompraAccesorio.cantidad) cantidad, BI_Compra.ciudadSucursal sucursal, BI_Compra.añoCompra año
+from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
+	left join ESTUDIANTES_CON_INSOMNIO.BI_Compra on BI_CompraAccesorio.idCompra = BI_Compra.idCompra
+group by BI_Compra.ciudadSucursal, BI_Compra.añoCompra
 go
-*/
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_Accesorio as
 select coalesce(sum(BI_ItemAccesorio.cantidad * (BI_ItemAccesorio.precio - BI_CompraAccesorio.promedioPrecio)),0) ganancia, BI_Factura.ciudadSucursal sucursal, BI_Factura.mesFactura mes, BI_Factura.añoFactura año
