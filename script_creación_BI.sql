@@ -337,15 +337,14 @@ go
 -- vistas de Accesorios
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Accesorio as
-select avg(datediff(month, Compra.fechaCompra, Factura.fechaFacturacion)) promedioTiempo, BI_ItemAccesorio.idItemAccesorio itemAccesorio
+/*select avg(datediff(month, Compra.fechaCompra, Factura.fechaFacturacion)) promedioTiempo, BI_ItemAccesorio.codAccesorio itemAccesorio
 from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio
 	cross join ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
 	left join ESTUDIANTES_CON_INSOMNIO.Compra on BI_CompraAccesorio.idCompra = Compra.idCompra
 	left join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = BI_ItemAccesorio.idFactura
 where BI_ItemAccesorio.codAccesorio = BI_CompraAccesorio.codAccesorio
-group by BI_ItemAccesorio.codAccesorio
+group by BI_ItemAccesorio.codAccesorio*/
 go
-
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio as
 select avg(BI_ItemAccesorio.precio) precioPromedio, BI_ItemAccesorio.codAccesorio CodigoAccesorio, 'Venta' tipoOperacion

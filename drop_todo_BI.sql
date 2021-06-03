@@ -39,3 +39,4 @@ drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_Accesorio;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_PC;
 drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Maximo_Stock_x_Sucursal_y_año_Accesorios;
+drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Accesorio;
