@@ -297,20 +297,19 @@ go
 
 -- vistas de PCs
 
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_PC as
-		SELECT PC.idCodigoPC ,AVG(DATEDIFF(DAY, C.fechaCompra,F.fechaFacturacion)) Promedio_Tiempo_Stock_PC
-		FROM ESTUDIANTES_CON_INSOMNIO.CompraPC CPC JOIN ESTUDIANTES_CON_INSOMNIO.Compra C ON CPC.idCompra = C.idCompra
-		JOIN ESTUDIANTES_CON_INSOMNIO.PC ON CPC.idCodigoPc = PC.idCodigoPC 
-		JOIN ESTUDIANTES_CON_INSOMNIO.ItemPC IPC ON IPC.idCodigoPc = PC.idCodigoPC
-		JOIN ESTUDIANTES_CON_INSOMNIO.Factura F ON F.idFactura = IPC.idFactura
-		WHERE PC.idCodigoPC IN (SELECT P.idCodigoPC FROM ESTUDIANTES_CON_INSOMNIO.PC P WHERE P.idCodigoPC = IPC.idCodigoPc)
-		GROUP BY PC.idCodigoPC
-	GO
-
-/*
-drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_PC
-select * from ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_PC
- */
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Stock_PC as
+select IPC.idCodigoPC CodigoPC, datediff(day,
+	(select avg(datediff(day,Factura.fechaFacturacion,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.ItemPC
+		join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = ItemPC.idFactura
+	where ItemPC.idCodigoPc = IPC.idCodigoPc
+	group by ItemPC.idCodigoPc),
+	(select avg(datediff(day,Compra.fechaCompra,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.CompraPC
+		join ESTUDIANTES_CON_INSOMNIO.Compra on CompraPC.idCompra = Compra.idCompra
+	where CompraPC.idCodigoPc = IPC.idCodigoPc
+	group by CompraPC.idCodigoPc)) PromedioTiempo
+from ESTUDIANTES_CON_INSOMNIO.ItemPC IPC
+group by IPC.idCodigoPc;
+go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_PC as
 select avg(BI_ItemPC.precio) precioPromedio, BI_ItemPC.idCodigoPc CodigoPC, 'Venta' tipoOperacion
@@ -347,23 +346,20 @@ go
 
 -- vistas de Accesorios
 
+create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Stock_Accesorios as
+select IAcc.codAccesorio CodigoAccesorio, datediff(day,
+	(select avg(datediff(day,Factura.fechaFacturacion,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
+		join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = ItemAccesorio.idFactura
+	where ItemAccesorio.codAccesorio = IAcc.codAccesorio
+	group by ItemAccesorio.codAccesorio),
+	(select avg(cast (datediff(day,Compra.fechaCompra,'01-01-1900') as bigint)) from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio
+		join ESTUDIANTES_CON_INSOMNIO.Compra on CompraAccesorio.idCompra = Compra.idCompra
+	where CompraAccesorio.codAccesorio = IAcc.codAccesorio
+	group by CompraAccesorio.codAccesorio)) PromedioTiempo
+from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio IAcc
+group by IAcc.codAccesorio;
+go
 
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS AS
-SELECT ACC.codAccesorio ,avg(DATEDIFF(DAY, C.fechaCompra,F.fechaFacturacion)) Promedio_Tiempo_Stock
-	FROM ESTUDIANTES_CON_INSOMNIO.CompraAccesorio CAC JOIN ESTUDIANTES_CON_INSOMNIO.Compra C ON CAC.idCompra = C.idCompra
-	JOIN ESTUDIANTES_CON_INSOMNIO.Accesorio ACC ON CAC.idCompraAccesorio = ACC.codAccesorio 
-	JOIN ESTUDIANTES_CON_INSOMNIO.ItemAccesorio IAC ON IAC.codAccesorio = ACC.codAccesorio
-	JOIN ESTUDIANTES_CON_INSOMNIO.Factura F ON F.idFactura = IAC.idFactura
-	WHERE ACC.codAccesorio IN (SELECT ACC.codAccesorio FROM ESTUDIANTES_CON_INSOMNIO.Accesorio A WHERE  A.codAccesorio = IAC.codAccesorio)
-	group by ACC.codAccesorio
-GO
-SELECT * FROM ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS
-/* PRUEBA DE TEMP Y VISTA
-drop table #TMPTiempoEnStockAccesorios
-drop view ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS
-SELECT * FROM #TMPTiempoEnStockAccesorios
-SELECT * FROM ESTUDIANTES_CON_INSOMNIO.vista_BI_PROMEDIO_TIEMPO_STOCK_ACCESORIOS
-*/
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio as
 select avg(BI_ItemAccesorio.precio) precioPromedio, BI_ItemAccesorio.codAccesorio CodigoAccesorio, 'Venta' tipoOperacion
 from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio 
@@ -390,66 +386,6 @@ from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio
 		from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
 		where BI_CompraAccesorio.codAccesorio = BI_ItemAccesorio.codAccesorio) BI_CompraAccesorio
 group by BI_Factura.añoFactura, BI_Factura.mesFactura, BI_Factura.ciudadSucursal
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Fabricante as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Fabricante;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_MemoriaRAM as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_MemoriaRAM;
-go 
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Microprocesador as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Microprocesador;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_DiscoRigido as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_DiscoRigido;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_PlacaVideo as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_PlacaVideo;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_PC as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_PC;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Sucursal as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Sucursal;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Cliente as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Cliente;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Factura as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Factura;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Compra as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Compra;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Accesorio as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_Accesorio;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_ItemAccesorio as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_ItemPC as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_CompraAccesorio as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio;
-go
-
-create view ESTUDIANTES_CON_INSOMNIO.vista_BI_CompraPC as
-select * from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC;
 go
 
 -- creación de los triggers para evitar que se borren datos ya insertados
