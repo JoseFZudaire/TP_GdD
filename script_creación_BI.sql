@@ -222,9 +222,9 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(direccionSucursal, mail, telefo
 insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(edadRango, sexo)
 	select 
 	(case 
-	when (year(Cliente.fechaNacimiento) <= 2003 and year(Cliente.fechaNacimiento) > 1991) then '18-30 años'
-	when (year(Cliente.fechaNacimiento) <= 1991 and year(Cliente.fechaNacimiento) > 1971) then '31-50 años' 
-	when (year(Cliente.fechaNacimiento) <= 1971) then '> 50 años' 
+	when (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 18  and (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) < 31 then '18-30 años'
+	when (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 31  and (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) < 50 then '31-50 años' 
+	when (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 50 then '> 50 años' 
 	else 'menor de edad'
 	end) edadRango, 'Indefinido' sexo
 	from ESTUDIANTES_CON_INSOMNIO.Cliente
