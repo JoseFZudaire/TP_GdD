@@ -60,69 +60,65 @@ create table ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(
 	primary key (direccionSucursal, ciudadSucursal)
 );
 
-create table ESTUDIANTES_CON_INSOMNIO.BI_Cliente(
-	idCliente decimal(18,0) not null identity(1,1) primary key,
-	sexo varchar(255),
-	edadRango varchar(255)
-);
-
 create table ESTUDIANTES_CON_INSOMNIO.BI_Accesorio(
 	codAccesorio decimal(18,0) not null identity(1,1) primary key,
 	descripcion varchar(255) not null
 );
 
+create table ESTUDIANTES_CON_INSOMNIO.BI_Fecha(
+	idFecha int not null identity(1,1) primary key,
+	año int not null,
+	mes int not null
+);
+
 create table ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(
-	idItemAccesorio decimal(18,0) not null identity(1,1) primary key,
 	codAccesorio decimal(18,0) not null foreign key references ESTUDIANTES_CON_INSOMNIO.Accesorio(codAccesorio),
-	cantidad decimal(18,0) not null,
-	añoFactura int not null,
-	mesFactura int not null,
+	idFecha int not null foreign key references ESTUDIANTES_CON_INSOMNIO.BI_Fecha(idFecha),
 	ciudadSucursal varchar(255) not null,
 	direccionSucursal varchar(255) not null,
 	precioProm decimal(18,2) not null,
-	promTiempo int not null,
+	promTiempo bigint not null,
 	cantAccesorios decimal(18,0) not null,
 	sexo varchar(255),
 	edadRango varchar(255),
-	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal)
+	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal),
+	primary key(codAccesorio, direccionSucursal, ciudadSucursal, idFecha)
 );
 
 create table ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(
-	idItemPC decimal(18,0) not null identity(1,1) primary key,
 	idCodigoPc varchar(50) not null foreign key references ESTUDIANTES_CON_INSOMNIO.PC(idCodigoPC),
-	cantidad decimal(18,0) not null,
-	añoFactura int not null,
-	mesFactura int not null,
+	idFecha int not null foreign key references ESTUDIANTES_CON_INSOMNIO.BI_Fecha(idFecha),
 	ciudadSucursal varchar(255) not null,
 	direccionSucursal varchar(255) not null,
 	precioProm decimal(18,2) not null,
 	sexo varchar(255),
 	edadRango varchar(255),
-	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal)
+	promTiempo bigint not null,
+	cantPCs decimal(18,0) not null,
+	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal),
+	primary key(idCodigoPc, direccionSucursal, ciudadSucursal, idFecha)
 );
 
 create table ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio(
-	idCompraAccesorio decimal(18,0) not null identity(1,1) primary key,
 	codAccesorio decimal(18,0) not null foreign key references ESTUDIANTES_CON_INSOMNIO.Accesorio(codAccesorio),
+	idFecha int not null foreign key references ESTUDIANTES_CON_INSOMNIO.BI_Fecha(idFecha),
 	cantAccesorios decimal(18,0) not null,
-	añoCompra int not null,
-	mesCompra int not null,
 	ciudadSucursal varchar(255) not null,
 	direccionSucursal varchar(255) not null,
 	precioProm decimal(18,2) not null, 
-	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal)
+	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal),
+	primary key(codAccesorio, direccionSucursal, ciudadSucursal, idFecha)
 );
 
 create table ESTUDIANTES_CON_INSOMNIO.BI_CompraPC(
-	idCompraPC decimal(18,0) not null identity(1,1) primary key,
 	idCodigoPc varchar(50) not null foreign key references ESTUDIANTES_CON_INSOMNIO.PC(idCodigoPC),
+	idFecha int not null foreign key references ESTUDIANTES_CON_INSOMNIO.BI_Fecha(idFecha),
 	cantPCs decimal(18,0) not null,
-	añoCompra int not null,
-	mesCompra int not null,
 	ciudadSucursal varchar(255) not null,
 	direccionSucursal varchar(255) not null,
 	precioProm decimal(18,2) not null,
-	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal)
+	foreign key (direccionSucursal, ciudadSucursal) references ESTUDIANTES_CON_INSOMNIO.Sucursal(direccionSucursal, ciudadSucursal),
+	primary key(idCodigoPc, direccionSucursal, ciudadSucursal, idFecha)
 );
 
 -- creación de índices para cada unas de las tablas sobre la/s PK
@@ -141,17 +137,15 @@ create index indicePC on ESTUDIANTES_CON_INSOMNIO.BI_PC(idCodigoPC);
 
 create index indiceSucursal on ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(direccionSucursal, ciudadSucursal);
 
-create index indiceCliente on ESTUDIANTES_CON_INSOMNIO.BI_Cliente(idCliente);
-
 create index indiceAccesorio on ESTUDIANTES_CON_INSOMNIO.BI_Accesorio(codAccesorio);
 
-create index indiceItemAccesorio on ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(idItemAccesorio);
+create index indiceItemAccesorio on ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(codAccesorio, direccionSucursal, ciudadSucursal, idFecha);
 
-create index indiceItemPC on ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(idItemPC);
+create index indiceItemPC on ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(idCodigoPc, direccionSucursal, ciudadSucursal, idFecha);
 
-create index indiceCompraAccesorio on ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio(idCompraAccesorio);
+create index indiceCompraAccesorio on ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio(codAccesorio, direccionSucursal, ciudadSucursal, idFecha);
 
-create index indiceCompraPC on ESTUDIANTES_CON_INSOMNIO.BI_CompraPC(idCompraPC);
+create index indiceCompraPC on ESTUDIANTES_CON_INSOMNIO.BI_CompraPC(idCodigoPc, direccionSucursal, ciudadSucursal, idFecha);
 
 -- Migración de Datos
 
@@ -216,38 +210,44 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_Sucursal(direccionSucursal, mail, telefo
 	select distinct Sucursal.direccionSucursal direccionSucursal, Sucursal.mail mail, Sucursal.telefono telefono, Sucursal.ciudadSucursal ciudadSucursal
 	from ESTUDIANTES_CON_INSOMNIO.Sucursal;
 
-insert into ESTUDIANTES_CON_INSOMNIO.BI_Cliente(edadRango, sexo)
-	select 
-	(case 
-	when (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 18  and (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) < 31 then '18-30 años'
-	when (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 31  and (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) < 50 then '31-50 años' 
-	when (cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 50 then '> 50 años' 
-	else 'menor de edad'
-	end) edadRango, 'Indefinido' sexo
-	from ESTUDIANTES_CON_INSOMNIO.Cliente
-	where Cliente.apellido is not null and Cliente.nombre is not null and Cliente.dni is not null;
+insert into ESTUDIANTES_CON_INSOMNIO.BI_Fecha(año, mes)
+	select year(Factura.fechaFacturacion) año, month(Factura.fechaFacturacion) mes
+	from ESTUDIANTES_CON_INSOMNIO.Factura
+	where year(Factura.fechaFacturacion) not in (select año from ESTUDIANTES_CON_INSOMNIO.BI_Fecha)
+		or month(Factura.fechaFacturacion) not in (select mes from ESTUDIANTES_CON_INSOMNIO.BI_Fecha where BI_Fecha.año = year(Factura.fechaFacturacion))
+	group by year(Factura.fechaFacturacion), month(Factura.fechaFacturacion)
 
-insert into ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio(codAccesorio, precioProm, añoCompra, 
-				mesCompra, direccionSucursal, ciudadSucursal, cantAccesorios)
+insert into ESTUDIANTES_CON_INSOMNIO.BI_Fecha(año, mes)
+	select year(Compra.fechaCompra) año, month(Compra.fechaCompra) mes
+	from ESTUDIANTES_CON_INSOMNIO.Compra
+	where year(Compra.fechaCompra) not in (select año from ESTUDIANTES_CON_INSOMNIO.BI_Fecha)
+		or month(Compra.fechaCompra) not in (select mes from ESTUDIANTES_CON_INSOMNIO.BI_Fecha where BI_Fecha.año = year(Compra.fechaCompra))
+	group by year(Compra.fechaCompra), month(Compra.fechaCompra)
+	
+insert into ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio(codAccesorio, precioProm, idFecha, direccionSucursal, ciudadSucursal, cantAccesorios)
 	select CompraAccesorio.codAccesorio codAccesorio, avg(CompraAccesorio.precio) precioProm,
-		year(Compra.fechaCompra) añoCompra, month(Compra.fechaCompra) mesCompra,
+		(select idFecha
+		from ESTUDIANTES_CON_INSOMNIO.BI_Fecha
+		where BI_Fecha.año = year(Compra.fechaCompra) and BI_Fecha.mes = month(Compra.fechaCompra)) idFecha,
 		Compra.direccionSucursal direccionSucursal, Compra.ciudadSucursal ciudadSucursal,
 		sum(CompraAccesorio.cantidad)
 	from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio
 		join ESTUDIANTES_CON_INSOMNIO.Compra on Compra.idCompra = CompraAccesorio.idCompra
 	group by year(Compra.fechaCompra), month(Compra.fechaCompra), Compra.ciudadSucursal,
-		Compra.direccionSucursal;
+		Compra.direccionSucursal, CompraAccesorio.codAccesorio;
 
-insert into ESTUDIANTES_CON_INSOMNIO.BI_CompraPC(idCodigoPc, precioProm, añoCompra, 
-				mesCompra, direccionSucursal, ciudadSucursal, cantPCs)
+insert into ESTUDIANTES_CON_INSOMNIO.BI_CompraPC(idCodigoPc, precioProm, idFecha, 
+				direccionSucursal, ciudadSucursal, cantPCs)
 	select CompraPC.idCodigoPc codAccesorio, avg(CompraPC.precio) precioProm,
-		year(Compra.fechaCompra) añoCompra, month(Compra.fechaCompra) mesCompra,
+		(select idFecha
+		from ESTUDIANTES_CON_INSOMNIO.BI_Fecha
+		where BI_Fecha.año = year(Compra.fechaCompra) and BI_Fecha.mes = month(Compra.fechaCompra)) idFecha,
 		Compra.direccionSucursal direccionSucursal, Compra.ciudadSucursal ciudadSucursal,
 		sum(CompraPC.cantidad)
 	from ESTUDIANTES_CON_INSOMNIO.CompraPC
-		join Compra on Compra.idCompra = CompraPC.idCompra
+		join ESTUDIANTES_CON_INSOMNIO.Compra on Compra.idCompra = CompraPC.idCompra
 	group by year(Compra.fechaCompra), month(Compra.fechaCompra), Compra.ciudadSucursal,
-		Compra.direccionSucursal;
+		Compra.direccionSucursal, CompraPC.idCodigoPc;
 
 -- Añadimos el atributo Fabricante a Accesorio, que en la tabla dada por la cátedra no tenía datos
 
@@ -259,38 +259,21 @@ alter table ESTUDIANTES_CON_INSOMNIO.BI_Accesorio
 set ansi_warnings off;
 go
 
-/*create function fx_edadProm(@año int, @mes int, 
-			@dirSucursal varchar(255), @ciudadSucursal varchar(255))
-	returns int 
-as
-begin
-	declare @edadProm int
-	set @edadProm = (select avg((cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)))
-			from Cliente
-				join Factura on Cliente.idCliente = Factura.idCliente
-			where year(Factura.fechaFacturacion) = @año
-				and month(Factura.fechaFacturacion) = @mes
-				and Factura.dirSucursal = @dirSucursal
-				and Factura.ciudadSucursal = @ciudadSucursal
-			group by Cliente.idCliente)
-
-	return @edadProm
-end
-go*/
-
-insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(idCodigoPc, precioProm, añoFactura,
-			mesFactura, direccionSucursal, ciudadSucursal, promTiempo, cantPCs,
+insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(idCodigoPc, precioProm, idFecha, direccionSucursal, ciudadSucursal, promTiempo, cantPCs,
 			sexo, edadRango)
 	select IPC.idCodigoPc idCodigoPC,  
-		avg(IPC.precio) precioProm, year(Factura.fechaFacturacion) año,
-		month(Factura.fechaFacturacion) mes, Factura.direccionSucursal direccionSucursal,
+		avg(IPC.precio) precioProm, 
+		(select idFecha
+		from ESTUDIANTES_CON_INSOMNIO.BI_Fecha
+		where BI_Fecha.año = year(Factura.fechaFacturacion) and BI_Fecha.mes = month(Factura.fechaFacturacion)) idFecha,
+		Factura.direccionSucursal direccionSucursal,
 		Factura.ciudadSucursal ciudadSucursal, 
 		datediff(day,
-	(select avg(datediff(day,Factura.fechaFacturacion,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.ItemPC
+	(select avg(cast(datediff(day,Factura.fechaFacturacion,'01-01-1900') as bigint)) from ESTUDIANTES_CON_INSOMNIO.ItemPC
 		join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = ItemPC.idFactura
 	where ItemPC.idCodigoPc = IPC.idCodigoPc
 	group by ItemPC.idCodigoPc),
-	(select avg(datediff(day,Compra.fechaCompra,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.CompraPC
+	(select avg(cast(datediff(day,Compra.fechaCompra,'01-01-1900') as bigint)) from ESTUDIANTES_CON_INSOMNIO.CompraPC
 		join ESTUDIANTES_CON_INSOMNIO.Compra on CompraPC.idCompra = Compra.idCompra
 	where CompraPC.idCodigoPc = IPC.idCodigoPc
 	group by CompraPC.idCodigoPc)) promTiempo,
@@ -308,23 +291,26 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemPC(idCodigoPc, precioProm, añoFactur
 	group by year(Factura.fechaFacturacion), month(Factura.fechaFacturacion), Factura.ciudadSucursal, Factura.direccionSucursal,
 		IPC.idCodigoPc
 
-insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(codAccesorio, precioProm, añoFactura,
-            mesFactura, direccionSucursal, ciudadSucursal, promTiempo, cantAccesorios,
+insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(codAccesorio, precioProm, idFecha,
+            direccionSucursal, ciudadSucursal, promTiempo, cantAccesorios,
             sexo, edadRango)
     select IAcc.codAccesorio idCodigoAccesorio,  
-        avg(IAcc.precio) precioProm, year(Factura.fechaFacturacion) año,
-        month(Factura.fechaFacturacion) mes, Factura.direccionSucursal direccionSucursal,
+        avg(IAcc.precio) precioProm, 
+		(select idFecha
+		from ESTUDIANTES_CON_INSOMNIO.BI_Fecha
+		where BI_Fecha.año = year(Factura.fechaFacturacion) and BI_Fecha.mes = month(Factura.fechaFacturacion)) idFecha,
+        Factura.direccionSucursal direccionSucursal,
         Factura.ciudadSucursal ciudadSucursal, 
         datediff(day,
-    (select avg(datediff(day,Factura.fechaFacturacion,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
+    (select avg(cast(datediff(day,Factura.fechaFacturacion,'01-01-1900') as bigint)) from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio
         join ESTUDIANTES_CON_INSOMNIO.Factura on Factura.idFactura = ItemAccesorio.idFactura
     where ItemAccesorio.codAccesorio = IAcc.codAccesorio
     group by ItemAccesorio.codAccesorio),
-    (select avg(datediff(day,Compra.fechaCompra,'01-01-1900')) from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio
+   (select avg(cast(datediff(day,Compra.fechaCompra,'01-01-1900') as bigint)) from ESTUDIANTES_CON_INSOMNIO.CompraAccesorio
         join ESTUDIANTES_CON_INSOMNIO.Compra on CompraAccesorio.idCompra = Compra.idCompra
     where CompraAccesorio.codAccesorio = IAcc.codAccesorio
     group by CompraAccesorio.codAccesorio)) promTiempo,
-        count(distinct codAccesorio) cantAccesorios,
+        coalesce(sum(IAcc.cantidad),0) cantAccesorios,
         'Indefinido' sexo,
         (case 
         when avg(cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) > 18  and avg(cast(datediff(DAY,Cliente.fechaNacimiento,getdate())/365 as int)) < 31 then '18-30 años'
@@ -337,112 +323,108 @@ insert into ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio(codAccesorio, precioProm, 
         left join ESTUDIANTES_CON_INSOMNIO.Cliente Cliente on Cliente.idCliente = Factura.idCliente
     group by year(Factura.fechaFacturacion), month(Factura.fechaFacturacion), Factura.ciudadSucursal, Factura.direccionSucursal,
         IAcc.codAccesorio
-
--- agregamos FK a las tablas de ítem ahora, porque si los agregábamos antes se nos dificultaba  crear la tabla Item, 
--- por lo que no podríamos usar los atributos ItemPC.precio y ItemPC.cantidad para calcular el precio de la factura
-
-alter table ESTUDIANTES_CON_INSOMNIO.BI_ItemPC
-	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.BI_Factura(idFactura)
-	on delete cascade
-	on update cascade;
-
-alter table ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio
-	add foreign key (idFactura) references ESTUDIANTES_CON_INSOMNIO.BI_Factura(idFactura)
-	on delete cascade
-	on update cascade;
 go
-
 
 -- creación de las vistas
 
 -- vistas de PCs
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Stock_PC as
-select IPC.idCodigoPC CodigoPC, IPC.añoFactura, IPC.mesFactura, IPC.promTiempo
-from ESTUDIANTES_CON_INSOMNIO.ItemPC IPC
-group by idCodigoPC, añoFactura ,mesFactura, promTiempo
+select IPC.idCodigoPC CodigoPC, IPC.promTiempo
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC IPC
+group by idCodigoPC, promTiempo
 go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_PC as
-select IPC.idCodigoPC CodigoPC, IPC.añoFactura, IPC.mesFactura, avg(IPC.precioProm)
-from ESTUDIANTES_CON_INSOMNIO.ItemPC IPC
-group by idCodigoPC, añoFactura ,mesFactura;
+select IPC.idCodigoPC CodigoPC, BI_Fecha.año año, BI_Fecha.mes mes,
+		IPC.ciudadSucursal ciudadSucursal, IPC.direccionSucursal direccionSucursal, IPC.precioProm precioProm
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC IPC
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on IPC.idFecha = BI_Fecha.idFecha
+group by idCodigoPC, año, mes, ciudadSucursal, direccionSucursal, precioProm
 go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Cant_PC_x_Sucursal_y_mes_PC as
-select count(BI_ItemPC.cantPCs) cantidad, BI_ItemPC.ciudadSucursal sucursal,  BI_ItemPC.mesFactura mes,  BI_ItemPC.añoFactura año, 'Venta' tipoOperacion
+select BI_ItemPC.idCodigoPc CodigoPC, BI_Fecha.año año, BI_Fecha.mes mes, 
+		'Venta' tipoOperacion, BI_ItemPC.ciudadSucursal ciudadSucursal, BI_ItemPC.direccionSucursal direccionSucursal,
+		BI_ItemPC.cantPCs cantidad
 from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC 
-group by  BI_ItemPC.añoFactura,  BI_ItemPC.mesFactura,  BI_ItemPC.ciudadSucursal
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on BI_ItemPC.idFecha = BI_Fecha.idFecha
+group by  BI_Fecha.año,  BI_Fecha.mes, BI_ItemPC.ciudadSucursal, BI_ItemPC.direccionSucursal,
+	BI_ItemPC.idCodigoPc, BI_ItemPC.cantPCs 
 union all
-select count(BI_CompraPC.cantPCs) cantidad, BI_Compra.ciudadSucursal sucursal, BI_Compra.mesCompra mes, BI_Compra.añoCompra año, 'Compra' tipoOperacion
+select BI_CompraPC.idCodigoPc CodigoPC, BI_Fecha.año año, BI_Fecha.mes mes, 
+		'Compra' tipoOperacion, BI_CompraPC.ciudadSucursal ciudadSucursal, BI_CompraPC.direccionSucursal direccionSucursal,
+		BI_CompraPC.cantPCs cantidad
 from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC
-    left join ESTUDIANTES_CON_INSOMNIO.BI_Compra on BI_CompraPC.idCompra = BI_Compra.idCompra
-group by BI_Compra.añoCompra, BI_Compra.mesCompra, BI_Compra.ciudadSucursal
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on BI_CompraPC.idFecha = BI_Fecha.idFecha
+group by BI_Fecha.año,  BI_Fecha.mes, BI_CompraPC.ciudadSucursal, BI_CompraPC.direccionSucursal,
+	BI_CompraPC.idCodigoPc, BI_CompraPC.cantPCs
 go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_PC as
-select coalesce(sum(BI_ItemPC.cantPcs * (BI_ItemPC.precio - BI_CompraPC.precioProm)),0) ganancia,  BI_ItemPC.ciudadSucursal sucursal,  BI_ItemPC.mesFactura mes,  BI_ItemPC.añoFactura año
-from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC     
+select BI_Fecha.año año, BI_Fecha.mes mes, 
+	BI_ItemPC.ciudadSucursal ciudadSucursal, BI_ItemPC.direccionSucursal direccionSucursal,
+	coalesce(sum(BI_ItemPC.cantPcs * (BI_ItemPC.precioProm - BI_CompraPC.precioProm)),0) ganancia		 
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemPC 
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on BI_ItemPC.idFecha = BI_Fecha.idFecha    
     outer apply (
-        select avg(BI_CompraPC.precioProm) as promedioPrecio
+        select BI_CompraPC.precioProm
         from ESTUDIANTES_CON_INSOMNIO.BI_CompraPC
         where BI_CompraPC.idCodigoPc = BI_ItemPC.idCodigoPc) BI_CompraPC
-group by  BI_ItemPC.añoFactura,  BI_ItemPC.mesFactura,  BI_ItemPC.ciudadSucursal
+group by  BI_Fecha.año,  BI_Fecha.mes,  BI_ItemPC.ciudadSucursal, BI_ItemPC.direccionSucursal
 go
 
 -- vistas de Accesorios
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Tiempo_Stock_Accesorios as
-select IAcc.codAccesorio CodigoAccesorio, ,IAcc.añoFactura, IAcc.mesFactura, avg(IPC.promTiempo)
-from ESTUDIANTES_CON_INSOMNIO.ItemAccesorio IAcc
-group by IAcc.codAccesorio, añoFactura, mesFactura
+select IAcc.codAccesorio CodigoAccesorio, BI_Fecha.año año, BI_Fecha.mes mes, IAcc.promTiempo promTiempo
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio IAcc
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on IAcc.idFecha = BI_Fecha.idFecha
+group by IAcc.codAccesorio, BI_Fecha.año, BI_Fecha.mes, IAcc.promTiempo
 go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Promedio_Precio_Accesorio as
-select IAcc.precioProm precioPromedio, IAcc.codAccesorio CodigoAccesorio, 'Venta' tipoOperacion
-from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio IAcc 
-group by codAccesorio
+select IAcc.codAccesorio CodigoAccesorio, IAcc.ciudadSucursal ciudadSucursal,
+	IAcc.direccionSucursal direccionSucursal, IAcc.precioProm precioPromedio, 'Venta' tipoOperacion,
+	BI_Fecha.año año, BI_Fecha.mes mes
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio IAcc
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on IAcc.idFecha = BI_Fecha.idFecha 
+group by codAccesorio, ciudadSucursal, direccionSucursal, precioProm, año, mes
 union all
-select CAcc.precio precioPromedio, CAcc.codAccesorio CodigoAccesorio, 'Compra' tipoOperacion
+select CAcc.codAccesorio CodigoAccesorio, CAcc.ciudadSucursal ciudadSucursal,
+	CAcc.direccionSucursal direccionSucursal, CAcc.precioProm precioPromedio, 'Compra' tipoOperacion,
+	BI_Fecha.año año, BI_Fecha.mes mes
 from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio CAcc
-group CAcc.codAccesorio;
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on CAcc.idFecha = BI_Fecha.idFecha
+group by codAccesorio, ciudadSucursal, direccionSucursal, precioProm, año, mes
 go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Maximo_Stock_x_Sucursal_y_año_Accesorios as
-select sum(BI_CompraAccesorio.cantidad) cantidad, BI_Compra.ciudadSucursal sucursal, BI_Compra.añoCompra año
+select BI_CompraAccesorio.ciudadSucursal ciudadSucursal, BI_CompraAccesorio.direccionSucursal direccionSucursal, 
+	BI_Fecha.año año, sum(BI_CompraAccesorio.cantAccesorios) maxStock 
 from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
-    left join ESTUDIANTES_CON_INSOMNIO.BI_Compra on BI_CompraAccesorio.idCompra = BI_Compra.idCompra
-group by BI_Compra.ciudadSucursal, BI_Compra.añoCompra
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on BI_Fecha.idFecha = BI_CompraAccesorio.idFecha
+group by BI_CompraAccesorio.ciudadSucursal, BI_CompraAccesorio.direccionSucursal, 
+	BI_Fecha.año
 go
 
 create view ESTUDIANTES_CON_INSOMNIO.vista_BI_Ganancias_Accesorio as
-select coalesce(sum(BI_ItemAccesorio.cantidad * (BI_ItemAccesorio.precioProm - BI_CompraAccesorio.precioProm)),0) ganancia, BI_Factura.ciudadSucursal sucursal, IAcc.mesFactura mes, IAcc.añoFactura año
-from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio IAcc        
+select BI_Fecha.año año, BI_Fecha.mes mes, 
+	IAcc.ciudadSucursal ciudadSucursal, IAcc.direccionSucursal direccionSucursal,
+	coalesce(sum(IAcc.cantAccesorios * (IAcc.precioProm - BI_CompraAccesorio.precioProm)),0) ganancia
+from ESTUDIANTES_CON_INSOMNIO.BI_ItemAccesorio IAcc 
+	join ESTUDIANTES_CON_INSOMNIO.BI_Fecha on BI_Fecha.idFecha = IAcc.idFecha       
     outer apply (
-        select avg(BI_CompraAccesorio.precioProm) as promedioPrecio
+        select BI_CompraAccesorio.precioProm
         from ESTUDIANTES_CON_INSOMNIO.BI_CompraAccesorio
         where BI_CompraAccesorio.codAccesorio = IAcc.codAccesorio) BI_CompraAccesorio
-group by IAcc.añoFactura,IAcc.mesFactura, IAcc.ciudadSucursal
-
+group by BI_Fecha.año, BI_Fecha.mes, IAcc.ciudadSucursal, IAcc.direccionSucursal
+go
 -- creación de los triggers para evitar que se borren datos ya insertados
 -- (medida de seguridad)
 
 create trigger ESTUDIANTES_CON_INSOMNIO.borrar_BI_Accesorios
 on ESTUDIANTES_CON_INSOMNIO.BI_Accesorio
-for delete as
-	raiserror('No está permitido borrar datos', 16, 1)
-	rollback
-go
-
-create trigger ESTUDIANTES_CON_INSOMNIO.borrar_BI_Clientes
-on ESTUDIANTES_CON_INSOMNIO.BI_Cliente
-for delete as
-	raiserror('No está permitido borrar datos', 16, 1)
-	rollback
-go
-
-create trigger ESTUDIANTES_CON_INSOMNIO.borrar_BI_Compras
-on ESTUDIANTES_CON_INSOMNIO.BI_Compra
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
@@ -471,13 +453,6 @@ go
 
 create trigger ESTUDIANTES_CON_INSOMNIO.borrar_BI_Fabricantes
 on ESTUDIANTES_CON_INSOMNIO.BI_Fabricante
-for delete as
-	raiserror('No está permitido borrar datos', 16, 1)
-	rollback
-go
-
-create trigger ESTUDIANTES_CON_INSOMNIO.borrar_BI_Facturas
-on ESTUDIANTES_CON_INSOMNIO.BI_Factura
 for delete as
 	raiserror('No está permitido borrar datos', 16, 1)
 	rollback
